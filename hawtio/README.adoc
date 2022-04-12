@@ -1,0 +1,42 @@
+= Hawtio
+
+== Build & Publish
+
+.Build Docker image
+[source,bash]
+----
+docker build -t ueisele/hawtio:2.14.5 .
+----
+
+[source,bash]
+----
+docker push ueisele/hawtio:2.14.5
+----
+
+.Alternatively build and push multi arch Docker images
+[source,bash]
+----
+HAWTIO_VERSION=2.14.5
+docker buildx build --push \
+    --platform linux/amd64,linux/arm64 \
+    --build-arg HAWTIO_VERSION=${HAWTIO_VERSION} \
+    -t ueisele/hawtio:${HAWTIO_VERSION}-$(date --utc +'%Y%m%dT%H%M%Z') \
+    -t ueisele/hawtio:${HAWTIO_VERSION} \
+    -t ueisele/hawtio:latest .
+----
+
+== Deploy
+
+[source,bash]
+----
+kubectl apply -f kubernetes.yaml
+----
+
+== Connect
+
+[source,bash]
+----
+kubectl port-forward service/hawtio 8081:80
+----
+
+Open Web browser at: http://localhost:8081/hawtio
