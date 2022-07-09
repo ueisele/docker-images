@@ -63,7 +63,7 @@ x86_64
 .Run for amd64 arch
 [source,bash]
 ----
-podman run --rm --arch=amd64 docker.io/ueisele/hawtio:2.15.0
+podman run --rm --arch=amd64 -p 8081:8081 docker.io/ueisele/hawtio:2.15.0
 ----
 
 .On a amd64 host, the previous command is executed natively
@@ -76,7 +76,7 @@ podman run --rm --arch=amd64 docker.io/ueisele/hawtio:2.15.0
 .Run for arm64 arch
 [source,bash]
 ----
-podman run --rm --arch=arm64/v8 docker.io/ueisele/hawtio:2.15.0
+podman run --rm --arch=arm64/v8 -p 8081:8081 docker.io/ueisele/hawtio:2.15.0
 ----
 
 .On a amd64 host, the previous command is executed with qemu
@@ -85,6 +85,8 @@ podman run --rm --arch=arm64/v8 docker.io/ueisele/hawtio:2.15.0
 λ ps -ef | grep java
 100999     86778   86775 61 16:42 ?        00:00:13 /usr/bin/qemu-aarch64-static /usr/bin/java -Dhawtio.proxyWhitelist=* -Dhawtio.proxyAllowlist=* -jar /home/appuser/opt/hawtio/hawtio-app-2.15.0.jar --port 8081
 ----
+
+Open Web browser at: http://localhost:8081/hawtio
 
 == Deploy
 
