@@ -1,28 +1,89 @@
 = Hawtio
 
-== Build & Publish
+== Build & Push
 
-.Build Docker image
+.Build and push image
 [source,bash]
 ----
-docker build -t ueisele/hawtio:2.14.5 .
+podman build -t docker.io/ueisele/hawtio:2.15.0 .
+podman push docker.io/ueisele/hawtio:2.15.0
 ----
 
+== Multi Arch Build & Push 
+
+.Build
 [source,bash]
 ----
-docker push ueisele/hawtio:2.14.5
+HAWTIO_VERSION=2.15.0
+HAWTIO_BUILDTIMESTAMP=$(date --utc +'%Y%m%dT%H%M%Z')
+buildah build \
+  --jobs=2 --platform linux/amd64,linux/arm64/v8 \
+  --manifest docker.io/ueisele/hawtio:${HAWTIO_VERSION}-${HAWTIO_BUILDTIMESTAMP} .
+buildah tag docker.io/ueisele/hawtio:${HAWTIO_VERSION}-${HAWTIO_BUILDTIMESTAMP} docker.io/ueisele/hawtio:${HAWTIO_VERSION}
+buildah tag docker.io/ueisele/hawtio:${HAWTIO_VERSION}-${HAWTIO_BUILDTIMESTAMP} docker.io/ueisele/hawtio:latest
 ----
 
-.Alternatively build and push multi arch Docker images
+.Check if the manifest contains two manifests, one for amd64 and one for arm64
 [source,bash]
 ----
-HAWTIO_VERSION=2.14.5
-docker buildx build --push \
-    --platform linux/amd64,linux/arm64 \
-    --build-arg HAWTIO_VERSION=${HAWTIO_VERSION} \
-    -t ueisele/hawtio:${HAWTIO_VERSION}-$(date --utc +'%Y%m%dT%H%M%Z') \
-    -t ueisele/hawtio:${HAWTIO_VERSION} \
-    -t ueisele/hawtio:latest .
+podman manifest inspect docker.io/ueisele/hawtio:${HAWTIO_VERSION}
+----
+
+.Push
+[source,bash]
+----
+podman manifest push --all docker.io/ueisele/hawtio:${HAWTIO_VERSION}-${HAWTIO_BUILDTIMESTAMP} docker://docker.io/ueisele/hawtio:${HAWTIO_VERSION}-${HAWTIO_BUILDTIMESTAMP}
+podman manifest push --all docker.io/ueisele/hawtio:${HAWTIO_VERSION} docker://docker.io/ueisele/hawtio:${HAWTIO_VERSION}
+podman manifest push --all docker.io/ueisele/hawtio:latest docker://docker.io/ueisele/hawtio:latest
+----
+
+.Cleanup
+[source,bash]
+----
+podman manifest rm docker.io/ueisele/hawtio:${HAWTIO_VERSION}-${HAWTIO_BUILDTIMESTAMP}
+podman manifest rm docker.io/ueisele/hawtio:${HAWTIO_VERSION}
+podman manifest rm docker.io/ueisele/hawtio:latest
+----
+
+.Check arm64
+[source,bash]
+----
+λ podman run --rm --arch=arm64/v8 docker.io/ueisele/hawtio:2.15.0 uname -m
+aarch64
+----
+
+.Check amd64
+----
+λ podman run --rm --arch=amd64 docker.io/ueisele/hawtio:2.15.0 uname -m
+x86_64
+----
+
+== Run
+
+.Run for amd64 arch
+[source,bash]
+----
+podman run --rm --arch=amd64 docker.io/ueisele/hawtio:2.15.0
+----
+
+.On a amd64 host, the previous command is executed natively
+[source,bash]
+----
+λ ps -ef | grep java
+100999     87372   87369 88 16:42 ?        00:00:01 java -Dhawtio.proxyWhitelist=* -Dhawtio.proxyAllowlist=* -jar /home/appuser/opt/hawtio/hawtio-app-2.15.0.jar --port 8081
+----
+
+.Run for arm64 arch
+[source,bash]
+----
+podman run --rm --arch=arm64/v8 docker.io/ueisele/hawtio:2.15.0
+----
+
+.On a amd64 host, the previous command is executed with qemu
+[source,bash]
+----
+λ ps -ef | grep java
+100999     86778   86775 61 16:42 ?        00:00:13 /usr/bin/qemu-aarch64-static /usr/bin/java -Dhawtio.proxyWhitelist=* -Dhawtio.proxyAllowlist=* -jar /home/appuser/opt/hawtio/hawtio-app-2.15.0.jar --port 8081
 ----
 
 == Deploy

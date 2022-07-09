@@ -1,15 +1,14 @@
-FROM azul/zulu-openjdk:17.0.2-jre
+FROM docker.io/amazoncorretto:17.0.3-al2
 
-RUN apt-get update \
-    && apt-get install -y curl file \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN useradd --no-log-init --create-home --shell /bin/bash appuser
+RUN yum install -y shadow-utils \
+    && adduser --no-log-init --create-home --shell /bin/bash appuser \
+    && yum remove -y shadow-utils \
+    && yum clean all \
+    && rm -rf /var/cache/yum
 USER appuser
 WORKDIR /home/appuser
 
-ARG HAWTIO_VERSION=2.14.5
+ARG HAWTIO_VERSION=2.15.0
 ENV DOCKER_HAWTIO_DIR=/home/appuser/opt/hawtio \
     DOCKER_HAWTIO_FILENAME=hawtio-app-${HAWTIO_VERSION}.jar
 RUN mkdir -p ${DOCKER_HAWTIO_DIR} \
@@ -17,4 +16,4 @@ RUN mkdir -p ${DOCKER_HAWTIO_DIR} \
 ARG HAWTIO_PORT=8081
 ENV DOCKER_HAWTIO_PORT=${HAWTIO_PORT}
 EXPOSE ${HAWTIO_PORT}
-CMD ["bash", "-c", "java -Dhawtio.proxyWhitelist=* -Dhawtio.proxyAllowlist=* -jar ${DOCKER_HAWTIO_DIR}/${DOCKER_HAWTIO_FILENAME} --port ${DOCKER_HAWTIO_PORT}"]
+CMD ["sh", "-c", "java -Dhawtio.proxyWhitelist=* -Dhawtio.proxyAllowlist=* -jar ${DOCKER_HAWTIO_DIR}/${DOCKER_HAWTIO_FILENAME} --port ${DOCKER_HAWTIO_PORT}"]
