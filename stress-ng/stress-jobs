@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+trap "echo; exit" INT
+
+for job in "${@}"; do
+  IFS=: read -r cpu_load memory_bytes timeout <<< "${job}"
+  stress-ng $([ -n "${timeout}" ] && echo -t "${timeout}") \
+    --cpu 0 -l "${cpu_load}" --cpu-method ackermann \
+    --memrate 1 --memrate-flush --memrate-bytes "${memory_bytes}"
+done

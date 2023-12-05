@@ -1,0 +1,8 @@
+FROM alpine:edge 
+
+RUN apk add --update-cache tini bash stress-ng \
+  && rm -rf /var/cache/apk/*
+
+COPY --chmod=777 stress-jobs /usr/local/bin/
+
+ENTRYPOINT [ "tini" ]

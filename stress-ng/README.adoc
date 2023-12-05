@@ -1,0 +1,48 @@
+= stress-ng
+
+== Build & Push
+
+.Build and push image
+[source,bash]
+----
+buildah build -t docker.io/ueisele/stress-ng:latest .
+buildah push docker.io/ueisele/stress-ng:latest
+----
+
+== stress-jobs examples
+
+`stress-jobs <cpu-load>:<memory-bytes>:<timeout>``
+
+The following command runs the following scenarios:
+
+* 20% load on all CPUs and 1GB memory for 30 seconds
+* 50% load on all CPUs and 10GB memory for 30 seconds
+* 30% load on all CPUs and 5GB memory until terminated
+
+[source,bash]
+----
+podman run --rm -it docker.io/ueisele/stress-ng:latest \
+  stress-jobs 20:1073741824:30s 50:10737418240:30s 30:5368709120:
+----
+
+== stress-ng examples
+.20% load on all CPUs for 60 seconds
+[source,bash]
+----
+podman run --rm docker.io/ueisele/stress-ng:latest \
+  stress-ng --cpu 0 -l 20 --cpu-method ackermann -t 60s
+----
+
+.1GB memory for 60 seconds
+[source,bash]
+----
+podman run --rm docker.io/ueisele/stress-ng:latest \
+  stress-ng --memrate 1 --memrate-flush --memrate-bytes 1073741824 -t 60
+----
+
+.20% load on all CPUs and 1GB memory for 60 seconds
+[source,bash]
+----
+podman run --rm docker.io/ueisele/stress-ng:latest \
+  stress-ng --cpu 0 -l 20 --cpu-method ackermann --memrate 1 --memrate-flush --memrate-bytes 1073741824 -t 60s
+----
