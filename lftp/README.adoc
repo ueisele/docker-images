@@ -1,0 +1,10 @@
+= lftp
+
+== Build & Push
+
+.Build and push image
+[source,bash]
+----
+podman build -t docker.io/ueisele/lftp:latest .
+podman push docker.io/ueisele/lftp:latest
+----

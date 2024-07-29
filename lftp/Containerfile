@@ -1,0 +1,9 @@
+FROM alpine:edge 
+
+RUN apk add --update-cache busybox-extras openssh-client lftp \
+  && rm -rf /var/cache/apk/*
+
+RUN adduser -D appuser
+USER appuser
+RUN mkdir -p /home/appuser/.ssh
+WORKDIR /home/appuser
